@@ -33,13 +33,13 @@ public class Echoer implements Runnable {
 					//i++;
 					System.out.println();
 					
-					Thread t1= new Thread((Runnable) new AcceptInput());
+					Thread t1 = new Thread((Runnable) new Echoer(s));
 					t1.start();
+					Thread t2= new Thread((Runnable) new AcceptInput());
+					t2.start();
 					//tcpSocket.accept();
 					//System.out.println("Connection accepted");
 					//messaging();
-					Thread t2 = new Thread((Runnable) new Echoer(s));
-					t2.start();
 				}
 				catch (Exception e) {
 					System.out.println("Cannot accept connection");
@@ -64,7 +64,10 @@ public class Echoer implements Runnable {
 				Socket sock1= tcpSocket.accept();
 				//Client(InetAddress.getLocalHost().getHostAddress(),tcpSocket.getLocalPort());
 				System.out.println("Connection accepted");
-				new Messaging(sock1);
+				System.out.println("got Conn. request from "+sock1.getInetAddress().getHostAddress());
+				Thread t3= new Thread((Runnable)new Messaging(sock1));
+				t3.start();
+				//new Messaging(sock1);
 				//Now start the messaging thread nad pass this sock1 to tcpClient
 				/*String line;
 				System.out.println("Write a message");
@@ -128,12 +131,22 @@ class AcceptInput implements Runnable {
 					j++;
 				}
 				if (token[0].equalsIgnoreCase("connect")) {
-						new Echoer().Client(token[1],Integer.parseInt(token[2]));
-						}
+					Runnable r1= new ConnectionList(token[1],Integer.parseInt(token[2]));	
+					Thread t4= new Thread(r1);
+					t4.start();				
+					//new Echoer().Client(token[1],Integer.parseInt(token[2]));
+					}
 				else if (token[0].equalsIgnoreCase("show")) {
 					//show()
 				}
 				else if (token[0].equalsIgnoreCase("send")) {
+					int k=2;
+					String s=null;
+					while (st.hasMoreTokens()) {
+						s = s + token[k] + " ";
+						k++;
+					}
+					new ConnectionList(Integer.parseInt(token[1]),s);
 					//send()
 				}
 				else if (token[0].equalsIgnoreCase("sendto")) {
@@ -153,26 +166,46 @@ class AcceptInput implements Runnable {
 					System.out.println("sendto <ip-address> <udp-port> <message>");
 					System.out.println("disconnect <conn-id>");
 					System.out.println("exit");
+					System.out.println();
 				}
 		}
 }
 	
 class Messaging implements Runnable {
-	DataInputStream din= null;
-	DataOutputStream dout= null;
-	Socket s= null;
-	String recvd;
+	Socket sock2;
 	public Messaging (Socket s) {
-		this.s=s;
+		this.sock2=s; //socket from accept();
 	}
 	public void run() {
+		//get socket from token[0].send loop via connectionlist class 
+		//call a rcvd and print method
+	}
+	
+	/*void send() {
 		try {
 			din= new DataInputStream(s.getInputStream());
 			recvd=din.readUTF();
 			System.out.println("Received msg: " + recvd);
+			dout= new DataOutputStream(s.getOutputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}*/
+}
+
+class ConnectionList extends Thread implements Runnable {
+	int index=0;
+	String msg= null;
+	public ConnectionList (String ip_addr,int port) {
+		new Echoer().Client(ip_addr,port);
+		System.out.println("Connected to:");
+	}
+	public ConnectionList (int index, String msg) {
+		this.index= index;
+		this.msg= msg;
+	}
+	public void run () {
+		
 	}
 }
 /*class Client implements Runnable {
