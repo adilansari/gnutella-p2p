@@ -261,16 +261,23 @@ class ConnectionList extends Thread implements Runnable {
 			}*/
 		}
 	}
-	static void disconnect (int index) {
-		System.out.println("index to delete-"+index);
-		for (int i=index; i<=tcpClient.length; i++) {
-			if (tcpClient[i+1] != null) {
-				tcpClient[i]=tcpClient[i+1];
+	static void disconnect (int k) {
+		int id;
+		System.out.println("index to delete-"+k);
+		for (id=k; id<19; id++) {
+			try{
+				if (tcpClient[id+1] != null) {
+					tcpClient[id]=tcpClient[id+1];
+				} 
+				else {
+					tcpClient[id]=null;
+				}
 			}
-			else {
-				tcpClient[i]=null;
+			catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
+	index--;
 	}
 	public void run () {
 		
