@@ -68,7 +68,9 @@ public class Echoer implements Runnable {
 				//Client(InetAddress.getLocalHost().getHostAddress(),tcpSocket.getLocalPort());
 				System.out.println("got Conn. request from "+sock1.getInetAddress().getHostAddress() +" "+ sock1.getLocalSocketAddress());
 				System.out.println("Connection accepted");
-				new ConnectionList(sock1);
+				Thread t4= new Thread ((Runnable)new Messaging(sock1));
+				t4.start();
+				//new ConnectionList(sock1);
 			}
 			catch (IOException o) {
 				System.out.println("Read Failed");
@@ -133,19 +135,18 @@ class AcceptInput implements Runnable {
 				}
 				else if (token[0].equalsIgnoreCase("send")) {
 					int k=2;
-					String s=null;
-					while (st.hasMoreTokens()) {
+					String s= "";
+					while (token[k] != null) {
 						s = s + token[k] + " ";
 						k++;
 					}
-					ConnectionList.Msg(Integer.parseInt(token[1]), s);
-					//send()
+					ConnectionList.Msg(Integer.parseInt(token[1]), s); //send()
 				}
 				else if (token[0].equalsIgnoreCase("sendto")) {
 					//sendto()
 				}
 				else if (token[0].equalsIgnoreCase("disconnect")) {
-					
+					ConnectionList.disconnect(Integer.parseInt(token[1]));
 				}
 				else if (token[0].equalsIgnoreCase("exit")) {
 					System.exit(-1);
@@ -164,14 +165,44 @@ class AcceptInput implements Runnable {
 }
 	
 class Messaging implements Runnable {
-	Socket sock2;
-	public Messaging (Socket s) {
-		this.sock2=s; //socket from accept();
+	Socket s1,s2;
+	String msg;
+	public Messaging (Socket s1, String msg) {
+		this.s1=s1; //socket from accept();
+		this.msg= msg;
+		send();
 	}
+	public Messaging (Socket s2) {
+		this.s2=s2;
+	}
+	void send(){
+		try {
+			DataOutputStream dout= new DataOutputStream(s1.getOutputStream());
+			dout.writeUTF(msg);
+			dout.flush();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+	}
+	
 	public void run() {
-		//get socket from token[0].send loop via connectionlist class 
-		//call a rcvd and print method
+		while (true) {
+			try {
+				DataInputStream din = new DataInputStream(s2.getInputStream()); 
+				String str= din.readUTF();
+				System.out.println(str);
+				//if (str==null) {
+				//din.close();
+				//}
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+				//din.close();
+			}
+		}
 	}
+}
 	
 	/*void send() {
 		try {
@@ -183,7 +214,6 @@ class Messaging implements Runnable {
 			e.printStackTrace();
 		}
 	}*/
-}
 
 class ConnectionList extends Thread implements Runnable {
 	static int index=0;
@@ -194,8 +224,14 @@ class ConnectionList extends Thread implements Runnable {
 		new Echoer().Client(ip_addr,port);
 	}
 	static void Msg (int index1, String msg1) {
-		index= index1;
-		msg= msg1;
+		//index= index1;
+		//msg= msg1;
+		if (tcpClient[index1] != null) {
+			new Messaging(tcpClient[index1], msg1);
+		}
+		else {
+			System.out.println("Enter a valid connection id");
+		}
 	}
 	public ConnectionList(Socket sock3) {
 		//Echoer.isConnect= sock3.isConnected();
@@ -223,6 +259,17 @@ class ConnectionList extends Thread implements Runnable {
 			/*else {
 				System.out.println("Not Connected");
 			}*/
+		}
+	}
+	static void disconnect (int index) {
+		System.out.println("index to delete-"+index);
+		for (int i=index; i<=tcpClient.length; i++) {
+			if (tcpClient[i+1] != null) {
+				tcpClient[i]=tcpClient[i+1];
+			}
+			else {
+				tcpClient[i]=null;
+			}
 		}
 	}
 	public void run () {
