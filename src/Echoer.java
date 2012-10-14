@@ -7,10 +7,11 @@ public class Echoer implements Runnable {
 	int i,backlog;
 	public Socket tcpClient= null;
 	public ServerSocket tcpSocket= null;
+	static boolean isConnect= false;
 	public Echoer(int tcpPort, int udpPort, int backlog) {
 			try {
 				ServerSocket tcpSocket = new ServerSocket(tcpPort, backlog);
-				System.out.println("Server connected to "+ InetAddress.getLocalHost().getHostAddress() + "on TCP port " + tcpSocket.getLocalPort() + "and UDP port " + udpPort );
+				System.out.println("Listening on "+ InetAddress.getLocalHost().getHostAddress() + "on TCP port " + tcpSocket.getLocalSocketAddress());
 				this.backlog= backlog;
 				listening(tcpSocket);
 			}
@@ -51,6 +52,8 @@ public class Echoer implements Runnable {
 		System.out.println("address= "+ addr+ "port= "+ port);
 		try {
 			tcpClient = new Socket(addr,port);
+			ConnectionList.maintainList(tcpClient);
+			//maintain a list here now to have index ipaddr, hostaddr, localport, remoteport;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -60,27 +63,12 @@ public class Echoer implements Runnable {
 	public void run() {
 		while (true) {
 			try {
-				System.out.println("Listening on "+ InetAddress.getLocalHost().getHostAddress() + "on TCP port " + tcpSocket.getLocalSocketAddress());
+				isConnect=false;
 				Socket sock1= tcpSocket.accept();
 				//Client(InetAddress.getLocalHost().getHostAddress(),tcpSocket.getLocalPort());
+				System.out.println("got Conn. request from "+sock1.getInetAddress().getHostAddress() +" "+ sock1.getLocalSocketAddress());
 				System.out.println("Connection accepted");
-				System.out.println("got Conn. request from "+sock1.getInetAddress().getHostAddress());
-				Thread t3= new Thread((Runnable)new Messaging(sock1));
-				t3.start();
-				//new Messaging(sock1);
-				//Now start the messaging thread nad pass this sock1 to tcpClient
-				/*String line;
-				System.out.println("Write a message");
-				DataInputStream din= new DataInputStream(tcpClient.getInputStream());
-				line= din.readUTF();
-				if (line == null) {
-					din.close();
-					tcpClient.close();
-					}
-				System.out.println("Recvd message:" + line);*/
-				if (sock1 != null) {
-				tcpSocket.close();
-				}
+				new ConnectionList(sock1);
 			}
 			catch (IOException o) {
 				System.out.println("Read Failed");
@@ -102,7 +90,11 @@ class AcceptInput implements Runnable {
 	String cmd;
 	int i,j;
 	StringTokenizer st= null;
-	
+	String[] cl_ip=new String[20];
+	String[] cl_host=new String[20];
+	int[] cl_port=new int[20];
+	int[] cl_remote=new int[20];
+	int index=0;
 	public void run () {
 		//String cmd;
 		//int i,j=0;
@@ -129,14 +121,14 @@ class AcceptInput implements Runnable {
 				while (st.hasMoreElements()) {
 					token [j]=	st.nextToken();
 					j++;
+					//ConnectionList cl= new ConnectionList();
 				}
 				if (token[0].equalsIgnoreCase("connect")) {
-					Runnable r1= new ConnectionList(token[1],Integer.parseInt(token[2]));	
-					Thread t4= new Thread(r1);
-					t4.start();				
+					ConnectionList.AcceptConn(token[1],Integer.parseInt(token[2]));	
 					//new Echoer().Client(token[1],Integer.parseInt(token[2]));
-					}
+				}
 				else if (token[0].equalsIgnoreCase("show")) {
+					ConnectionList.show();
 					//show()
 				}
 				else if (token[0].equalsIgnoreCase("send")) {
@@ -146,7 +138,7 @@ class AcceptInput implements Runnable {
 						s = s + token[k] + " ";
 						k++;
 					}
-					new ConnectionList(Integer.parseInt(token[1]),s);
+					ConnectionList.Msg(Integer.parseInt(token[1]), s);
 					//send()
 				}
 				else if (token[0].equalsIgnoreCase("sendto")) {
@@ -194,15 +186,44 @@ class Messaging implements Runnable {
 }
 
 class ConnectionList extends Thread implements Runnable {
-	int index=0;
-	String msg= null;
-	public ConnectionList (String ip_addr,int port) {
+	static int index=0;
+	static String msg= null;
+	static Socket[] tcpClient= new Socket[20];
+	static int a=0;
+	static void AcceptConn (String ip_addr,int port) {
 		new Echoer().Client(ip_addr,port);
-		System.out.println("Connected to:");
 	}
-	public ConnectionList (int index, String msg) {
-		this.index= index;
-		this.msg= msg;
+	static void Msg (int index1, String msg1) {
+		index= index1;
+		msg= msg1;
+	}
+	public ConnectionList(Socket sock3) {
+		//Echoer.isConnect= sock3.isConnected();
+		tcpClient[a]= sock3; //recvd client sock from accept now update array
+		a++;
+	}
+	static void maintainList(Socket sock4){
+		System.out.println("now were onset");
+		index++;
+		tcpClient[index]=sock4;
+	}
+	static void show() {
+		int p=1;
+		if (tcpClient[p] != null) {
+			System.out.println("Conn ID |	IP	|   Hostname Port |  Local Port | Remote |");
+			for (; p<20; p++) {
+				if (tcpClient[p] != null) {
+					System.out.println(p + "     |     "+ tcpClient[p].getInetAddress().getHostAddress() + "   |    " + tcpClient[p].getInetAddress().getHostName() + "  | " + " " + tcpClient[p].getPort() + "  | " + " " + tcpClient[p].getLocalPort() );
+				}
+				/*System.out.println("IP address= "+ tcpClient[p].getInetAddress().getHostAddress());
+				System.out.println("Host Name= "+ tcpClient[p].getInetAddress().getHostName());
+				System.out.println("Local Port= "+ tcpClient[p].getPort());
+				System.out.println("Remote= "+ tcpClient[p].getLocalPort());*/
+			}
+			/*else {
+				System.out.println("Not Connected");
+			}*/
+		}
 	}
 	public void run () {
 		
