@@ -303,7 +303,7 @@ class ConnectionList extends Thread implements Runnable {
 					//} catch (UnknownHostException e) {
 					//	e.printStackTrace();
 					//} catch (IOException e) {
-						//e.printStackTrace();adad
+						//e.printStackTrace();
 					//}
 				}
 				/*System.out.println("IP address= "+ tcpClient[p].getInetAddress().getHostAddress());
