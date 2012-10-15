@@ -8,20 +8,29 @@ public class Echoer implements Runnable {
 	public Socket tcpClient= null;
 	public ServerSocket tcpSocket= null;
 	public DatagramSocket udpSocket=null;
+	public static String ipAddr= null;
 	static boolean isConnect= false;
 	public Echoer(int tcpPort, int udpPort, int backlog) {
 			try {
-				ServerSocket tcpSocket = new ServerSocket(tcpPort, backlog);
-				udpSocket = new DatagramSocket(udpPort);
-				System.out.println("Listening on "+ InetAddress.getLocalHost().getHostAddress() + "on TCP port " + tcpSocket.getLocalSocketAddress());
-				this.backlog= backlog;
-				listening(tcpSocket);
+				if((tcpPort >= 1) && (tcpPort <= 60000) &&(udpPort >= 1)&&(udpPort <= 60000)) {
+					ServerSocket tcpSocket = new ServerSocket(tcpPort, backlog);
+					udpSocket = new DatagramSocket(udpPort);
+					Socket testSocket= new Socket("8.8.8.8",53);
+					ipAddr= testSocket.getLocalAddress().getHostAddress();
+					System.out.println("Listening on "+ ipAddr + " TCP port- " + tcpPort+" and UDP port- "+ udpPort);
+					this.backlog= backlog;
+					testSocket.close();
+					listening(tcpSocket);
+				}
+				else {
+					System.out.println("Port Numbers should be between 1 and 60000");
+				}
 			}
 			catch (SocketTimeoutException s) {
 				System.out.println("timeout");
 			}
 			catch (IOException ioe) {
-				System.out.println("could not listen on port 10009");
+				System.out.println("could not listen on port "+ tcpPort);
 				System.exit(-1);
 			}
 	}
@@ -54,7 +63,6 @@ public class Echoer implements Runnable {
 	
 	public void Client(String addr, int port) 
 	{
-		System.out.println("address= "+ addr+ "port= "+ port);
 		try {
 			tcpClient = new Socket(addr,port);
 			ConnectionList.maintainList(tcpClient);
@@ -71,14 +79,13 @@ public class Echoer implements Runnable {
 				isConnect=false;
 				Socket sock1= tcpSocket.accept();
 				//Client(InetAddress.getLocalHost().getHostAddress(),tcpSocket.getLocalPort());
-				System.out.println("got Conn. request from "+sock1.getInetAddress().getHostAddress() +" "+ sock1.getLocalSocketAddress());
-				System.out.println("Connection accepted");
+				System.out.println("got Conn. request from "+sock1.getInetAddress().toString());
 				Thread t4= new Thread ((Runnable)new Messaging(sock1));
 				t4.start();
 				//new ConnectionList(sock1);
 			}
 			catch (IOException o) {
-				System.out.println("Read Failed");
+				System.out.println("Cannot connect: Read Failed");
 				}
 			}
 		}
@@ -225,17 +232,20 @@ class Messaging implements Runnable {
 		   }
 	   }
 	public void run() {
-		while (true) {
+		boolean b=true;
+		while (b) {
+			DataInputStream din;
 			try {
-				DataInputStream din = new DataInputStream(s2.getInputStream()); 
+				din = new DataInputStream(s2.getInputStream()); 
 				String str= din.readUTF();
 				System.out.println(str);
 				//if (str==null) {
-				//din.close();
+				din.close();
 				//}
 			}
 			catch (IOException e) {
 				e.printStackTrace();
+				b=false;
 				//din.close();
 			}
 		}
@@ -287,7 +297,14 @@ class ConnectionList extends Thread implements Runnable {
 			System.out.println("Conn ID |	IP	|   Hostname Port |  Local Port | Remote |");
 			for (; p<20; p++) {
 				if (tcpClient[p] != null) {
-					System.out.println(p + "     |     "+ tcpClient[p].getInetAddress().getHostAddress() + "   |    " + tcpClient[p].getInetAddress().getHostName() + "  | " + " " + tcpClient[p].getPort() + "  | " + " " + tcpClient[p].getLocalPort() );
+					//Socket testSocket;
+					//try {
+						System.out.println(p + "     |     "+ tcpClient[p].getInetAddress().getHostAddress() + "   |    " + tcpClient[p].getInetAddress().getHostName() + "  | " + " " + tcpClient[p].getPort() + "  | " + " " + tcpClient[p].getLocalPort() );
+					//} catch (UnknownHostException e) {
+					//	e.printStackTrace();
+					//} catch (IOException e) {
+						//e.printStackTrace();
+					//}
 				}
 				/*System.out.println("IP address= "+ tcpClient[p].getInetAddress().getHostAddress());
 				System.out.println("Host Name= "+ tcpClient[p].getInetAddress().getHostName());
