@@ -7,10 +7,12 @@ public class Echoer implements Runnable {
 	int i,backlog;
 	public Socket tcpClient= null;
 	public ServerSocket tcpSocket= null;
+	public DatagramSocket udpSocket=null;
 	static boolean isConnect= false;
 	public Echoer(int tcpPort, int udpPort, int backlog) {
 			try {
 				ServerSocket tcpSocket = new ServerSocket(tcpPort, backlog);
+				udpSocket = new DatagramSocket(udpPort);
 				System.out.println("Listening on "+ InetAddress.getLocalHost().getHostAddress() + "on TCP port " + tcpSocket.getLocalSocketAddress());
 				this.backlog= backlog;
 				listening(tcpSocket);
@@ -38,6 +40,9 @@ public class Echoer implements Runnable {
 					t1.start();
 					Thread t2= new Thread((Runnable) new AcceptInput());
 					t2.start();
+					Thread t3= new Thread((Runnable)new UDPrecv(udpSocket));
+					t3.start();
+					//start udp listening thread
 					//tcpSocket.accept();
 					//System.out.println("Connection accepted");
 					//messaging();
@@ -143,7 +148,13 @@ class AcceptInput implements Runnable {
 					ConnectionList.Msg(Integer.parseInt(token[1]), s); //send()
 				}
 				else if (token[0].equalsIgnoreCase("sendto")) {
-					//sendto()
+					int m=3;
+					String s= "";
+					while (token[m] != null) {
+						s = s + token[m] + " ";
+						m++;
+					}
+					Messaging.send_udp(token[1], Integer.parseInt(token[2]), s);
 				}
 				else if (token[0].equalsIgnoreCase("disconnect")) {
 					ConnectionList.disconnect(Integer.parseInt(token[1]));
@@ -151,8 +162,12 @@ class AcceptInput implements Runnable {
 				else if (token[0].equalsIgnoreCase("exit")) {
 					System.exit(-1);
 				}
+				else if (token[0].equalsIgnoreCase("info")) {
+					// printinfo
+				}
 				else {
 					System.out.println("No such Commands available, valid commands:");
+					System.out.println("info");
 					System.out.println("connect <ip-address> <tcp-port>");
 					System.out.println("show");
 					System.out.println("send <conn-id> <message>");
@@ -185,7 +200,30 @@ class Messaging implements Runnable {
 				e.printStackTrace();
 			}
 	}
-	
+	 static void send_udp(String ipaddr, int udPort, String message)
+	   {
+		   try
+		   {
+			   DatagramSocket clientSocket = new DatagramSocket();
+			   byte[] sendData = new byte[1024];
+			   sendData = message.getBytes();
+			   DatagramPacket sendPacket =  new DatagramPacket(sendData, sendData.length, InetAddress.getByName(ipaddr), udPort);
+			   clientSocket.send(sendPacket);
+			   clientSocket.close();
+		   }
+		   catch(SocketTimeoutException e)
+		   {
+			   System.out.println("Connection not able to established :");
+		   }
+		   catch(UnknownHostException e)
+		   {
+			   e.printStackTrace();
+		   }
+		   catch(IOException e)
+		   {
+			   e.printStackTrace();
+		   }
+	   }
 	public void run() {
 		while (true) {
 			try {
@@ -283,6 +321,7 @@ class ConnectionList extends Thread implements Runnable {
 		
 	}
 }
+
 /*class Client implements Runnable {
 	Socket tcpClient;
 	Client (String addr, int port) throws IOException 
@@ -291,3 +330,34 @@ class ConnectionList extends Thread implements Runnable {
 		tcpClient = new Socket(addr,port);
 	}
 }*/
+class UDPrecv implements Runnable 
+{
+	public DatagramSocket udpSock;
+	UDPrecv(DatagramSocket udpSock) throws IOException
+	{
+		this.udpSock = udpSock;
+	}
+	UDPrecv()
+	{
+		
+	}
+	public void run()
+	{
+		while(true)
+		{
+			try
+			{
+				byte[] receiveData = new byte[1024];;
+				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+				udpSock.receive(receivePacket); 
+				String message = new String(receivePacket.getData());
+				System.out.println(message);
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+}
