@@ -5,6 +5,7 @@ import java.util.*;
 
 public class Echoer implements Runnable {
 	int i,backlog;
+	public static int tcpPort, udpPort= 0;
 	public Socket tcpClient= null;
 	public ServerSocket tcpSocket= null;
 	public DatagramSocket udpSocket=null;
@@ -13,10 +14,13 @@ public class Echoer implements Runnable {
 	public Echoer(int tcpPort, int udpPort, int backlog) {
 			try {
 				if((tcpPort >= 1) && (tcpPort <= 60000) &&(udpPort >= 1)&&(udpPort <= 60000)) {
+					
 					ServerSocket tcpSocket = new ServerSocket(tcpPort, backlog);
 					udpSocket = new DatagramSocket(udpPort);
 					Socket testSocket= new Socket("8.8.8.8",53);
 					ipAddr= testSocket.getLocalAddress().getHostAddress();
+					Echoer.tcpPort= tcpPort;
+					Echoer.udpPort= udpPort;
 					System.out.println("Listening on "+ ipAddr + " TCP port- " + tcpPort+" and UDP port- "+ udpPort);
 					this.backlog= backlog;
 					testSocket.close();
@@ -52,9 +56,6 @@ public class Echoer implements Runnable {
 					Thread t3= new Thread((Runnable)new UDPrecv(udpSocket));
 					t3.start();
 					//start udp listening thread
-					//tcpSocket.accept();
-					//System.out.println("Connection accepted");
-					//messaging();
 				}
 				catch (Exception e) {
 					System.out.println("Cannot accept connection");
@@ -89,11 +90,7 @@ public class Echoer implements Runnable {
 				}
 			}
 		}
-			
-		/*catch (IOException i) {
-			System.out.println("Last statement");
-		}
-	}*/
+
 	public static void main(String[] args) {
 		new Echoer(Integer.parseInt(args[0]),Integer.parseInt(args[1]),5);
 		
@@ -110,12 +107,7 @@ class AcceptInput implements Runnable {
 	int[] cl_remote=new int[20];
 	int index=0;
 	public void run () {
-		//String cmd;
-		//int i,j=0;
-		//StringTokenizer st= null;
-		System.out.println("t2");
-		//insert while loop
-
+		//System.out.println("t2");
 		try {
 			while (true) {
 				BufferedReader br= new BufferedReader(new InputStreamReader(System.in));
@@ -135,15 +127,12 @@ class AcceptInput implements Runnable {
 				while (st.hasMoreElements()) {
 					token [j]=	st.nextToken();
 					j++;
-					//ConnectionList cl= new ConnectionList();
 				}
 				if (token[0].equalsIgnoreCase("connect")) {
 					ConnectionList.AcceptConn(token[1],Integer.parseInt(token[2]));	
-					//new Echoer().Client(token[1],Integer.parseInt(token[2]));
 				}
 				else if (token[0].equalsIgnoreCase("show")) {
 					ConnectionList.show();
-					//show()
 				}
 				else if (token[0].equalsIgnoreCase("send")) {
 					int k=2;
@@ -170,7 +159,7 @@ class AcceptInput implements Runnable {
 					System.exit(-1);
 				}
 				else if (token[0].equalsIgnoreCase("info")) {
-					// printinfo
+					ConnectionList.info();
 				}
 				else {
 					System.out.println("No such Commands available, valid commands:");
@@ -190,7 +179,7 @@ class Messaging implements Runnable {
 	Socket s1,s2;
 	String msg;
 	public Messaging (Socket s1, String msg) {
-		this.s1=s1; //socket from accept();
+		this.s1=s1;
 		this.msg= msg;
 		send();
 	}
@@ -251,17 +240,6 @@ class Messaging implements Runnable {
 		}
 	}
 }
-	
-	/*void send() {
-		try {
-			din= new DataInputStream(s.getInputStream());
-			recvd=din.readUTF();
-			System.out.println("Received msg: " + recvd);
-			dout= new DataOutputStream(s.getOutputStream());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}*/
 
 class ConnectionList extends Thread implements Runnable {
 	static int index=0;
@@ -272,8 +250,6 @@ class ConnectionList extends Thread implements Runnable {
 		new Echoer().Client(ip_addr,port);
 	}
 	static void Msg (int index1, String msg1) {
-		//index= index1;
-		//msg= msg1;
 		if (tcpClient[index1] != null) {
 			new Messaging(tcpClient[index1], msg1);
 		}
@@ -297,23 +273,9 @@ class ConnectionList extends Thread implements Runnable {
 			System.out.println("Conn ID |	IP	|   Hostname Port |  Local Port | Remote |");
 			for (; p<20; p++) {
 				if (tcpClient[p] != null) {
-					//Socket testSocket;
-					//try {
 						System.out.println(p + "     |     "+ tcpClient[p].getInetAddress().getHostAddress() + "   |    " + tcpClient[p].getInetAddress().getHostName() + "  | " + " " + tcpClient[p].getPort() + "  | " + " " + tcpClient[p].getLocalPort() );
-					//} catch (UnknownHostException e) {
-					//	e.printStackTrace();
-					//} catch (IOException e) {
-						//e.printStackTrace();
-					//}
 				}
-				/*System.out.println("IP address= "+ tcpClient[p].getInetAddress().getHostAddress());
-				System.out.println("Host Name= "+ tcpClient[p].getInetAddress().getHostName());
-				System.out.println("Local Port= "+ tcpClient[p].getPort());
-				System.out.println("Remote= "+ tcpClient[p].getLocalPort());*/
 			}
-			/*else {
-				System.out.println("Not Connected");
-			}*/
 		}
 	}
 	static void disconnect (int k) {
@@ -334,19 +296,25 @@ class ConnectionList extends Thread implements Runnable {
 		}
 	index--;
 	}
+	static void info()
+	   {
+		   try
+		   {
+			  // String serverIp = InetAddress.getLocalHost().getHostAddress();
+			   String hostName = InetAddress.getLocalHost().getHostName();
+			
+			   System.out.println("IP Address     |  Host Name 	         |    TCP Port  |   UDP Port");
+			   System.out.println(Echoer.ipAddr + "  |   " + hostName + "      |   " + Echoer.tcpPort + "  |    " +Echoer.udpPort);
+		   }
+		   catch(Exception e)
+		   {
+			   e.printStackTrace();
+		   }
+		   }
 	public void run () {
 		
 	}
 }
-
-/*class Client implements Runnable {
-	Socket tcpClient;
-	Client (String addr, int port) throws IOException 
-	{
-		System.out.println("address= "+ addr+ "port= "+ port);
-		tcpClient = new Socket(addr,port);
-	}
-}*/
 class UDPrecv implements Runnable 
 {
 	public DatagramSocket udpSock;
@@ -376,5 +344,4 @@ class UDPrecv implements Runnable
 			}
 		}
 	}
-
 }
