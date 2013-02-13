@@ -1,52 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
 <html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=640" />
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <link rel="stylesheet" href="stylesheets/core.css" media="screen"/>
-    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)"/>
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
 
-    <script type="text/javascript" src="javascripts/modernizr.js"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function () {
-        $('#main_content').headsmart()
-      })
-    </script>
-    <title>P2p-echoer by adilansari</title>
-  </head>
+  <title>p2p-echoer</title>
+  <meta name="description" content="Peer to peer sharing program built on Gnutella protocol. Connections made over TCP and UDP.">
 
-  <body>
-    <a id="forkme_banner" href="https://github.com/adilansari/p2p-echoer">View on GitHub</a>
-    <div class="shell">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
 
-      <header>
-        <span class="ribbon-outer">
-          <span class="ribbon-inner">
-            <h1>P2p-echoer</h1>
-            <h2>Peer to peer sharing program built on Gnutella protocol. Connections made over TCP and UDP.</h2>
-          </span>
-          <span class="left-tail"></span>
-          <span class="right-tail"></span>
-        </span>
-      </header>
+</head>
 
-      <section id="downloads">
-        <span class="inner">
-          <a href="https://github.com/adilansari/p2p-echoer/zipball/master" class="zip"><em>download</em> .ZIP</a><a href="https://github.com/adilansari/p2p-echoer/tarball/master" class="tgz"><em>download</em> .TGZ</a>
-        </span>
-      </section>
+<body>
 
-
-      <span class="banner-fix"></span>
-
-
-      <section id="main_content">
-        <p>The program is called Echoer, whose features are described below.</p>
+  <div class="wrapper">
+    <header>
+      <h1 class="title">p2p-echoer</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">Peer to peer sharing program built on Gnutella protocol. Connections made over TCP and UDP.</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/adilansari/p2p-echoer/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/adilansari/p2p-echoer/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/adilansari/p2p-echoer" class="code">View p2p-echoer on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <p>The program is called Echoer, whose features are described below.</p>
 
 <p>• Echoer takes as arguments a tcp port and a udp port to which it will listen to incoming connection requests and incoming udp packets, respectively:
         java Echoer </p>
@@ -83,22 +73,34 @@ both sides then report that the connection is indeed established.</p>
 <p>o   sendto : send  as a udp datagram to  at .</p>
 
 <p>o   disconnect : disconnect the tcp connection whose id is .</p>
-      </section>
 
-      <footer>
-        <span class="ribbon-outer">
-          <span class="ribbon-inner">
-            <p>this project by <a href="https://github.com/adilansari">adilansari</a> can be found on <a href="https://github.com/adilansari/p2p-echoer">GitHub</a></p>
-          </span>
-          <span class="left-tail"></span>
-          <span class="right-tail"></span>
-        </span>
-        <p>Generated with <a href="http://pages.github.com">GitHub Pages</a> using Merlot</p>
-        <span class="octocat"></span>
-      </footer>
+<hr><h2>Contact</h2>
 
+<ul>
+<li><a href="mailto:%20me@adilansari.com">E-mail</a></li>
+<li><a href="http://twitter.com/adilansari">@adilansari</a></li>
+<li><a href="http://www.adilansari.com">HomePage</a></li>
+</ul>
+        </article>
+      </div>
     </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/adilansari" class="avatar"><img src="https://secure.gravatar.com/avatar/fecc67a0f23be29547061a25d815567f?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/adilansari">adilansari</a> maintains <a href="https://github.com/adilansari/p2p-echoer">p2p-echoer</a></p>
 
-    
-  </body>
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/adilansari/p2p-echoer/tarball/master" class="tar">tar</a><a href="https://github.com/adilansari/p2p-echoer/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
 </html>
